@@ -6,3 +6,8 @@ export const createUserValidation = Joi.object({
     password: Joi.string().min(6).required(),
     phone: Joi.string().pattern(/^[0-9]{10}$/).optional(),
 }); 
+
+export const loginSchema = Joi.object({
+  username: Joi.string().min(3).max(50).required(),
+  password: Joi.string().min(6).required(),
+});
