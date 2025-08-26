@@ -6,10 +6,13 @@ import helmet from 'helmet';
 
 // Importing Contants
 import { PORT } from './common/constants.js';
+import databaseConnection from './database/db.js';
+import router from './routes/index.routes.js';
 
 
 // Initialize express app
 const app = express();
+databaseConnection();
 
 // Apply middleware to enhance app security and functionality
 app.use(cors());
@@ -24,7 +27,7 @@ app.get('/ping', (req, res) => {
 });
 
 // Routes
-// app.use('/api',router);
+app.use('/api',router);
 
 // Create HTTP server and listen on defined port
 let httpServer = http.createServer(app);
