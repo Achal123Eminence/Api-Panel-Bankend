@@ -8,7 +8,7 @@ export async function initSchedulersFetchData() {
     try {
       console.log("Updating Betfair FETCH SPORT DATA...");
       await refreshSportData(); 
-    //   await refreshAllEventList()
+      await refreshAllEventList()
     } catch (err) {
       console.error("Scheduler failed to refresh Betfair FETCH SPORT DATA:", err.message);
     }

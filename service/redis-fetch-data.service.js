@@ -87,7 +87,7 @@ export async function refreshAllEventList(){
         ];
 
         for (const sport of sports) {
-          const enrichedEvents = await getAllEventList(sport);
+          const enrichedEvents = await getAllEventList(sport.id);
 
           // Save consolidated list in Redis
           await client.set(

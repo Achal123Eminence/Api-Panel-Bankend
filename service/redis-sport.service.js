@@ -47,7 +47,6 @@ export const getBookList = async (marketId) =>{
 export const getAllEventList = async (sportId) =>{
     try {
         const allEventListEX = await axios.get(`http://178.79.147.85:8000/api/data/all-event/${sportId}`);
-        // console.log(allEventListEX.data.events)
         return allEventListEX.data.events; 
     } catch (error) {
         console.error("Error calling betfair All Events API: ",error.response?.data || error.message);
