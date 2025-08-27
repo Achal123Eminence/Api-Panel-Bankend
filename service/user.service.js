@@ -25,7 +25,7 @@ export const createUserService = async ({username,email,password,phone}) =>{
 
 export const loginService = async ({ username, password }) => {
   // Find user
-  const user = await User.findOne({ username });
+  const user = await User.findOne({ username:username.toLowerCase() });
   if (!user) {
     throw new Error("Invalid username or password");
   }

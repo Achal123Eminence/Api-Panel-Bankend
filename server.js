@@ -8,7 +8,8 @@ import helmet from 'helmet';
 import { PORT } from './common/constants.js';
 import databaseConnection from './database/db.js';
 import router from './routes/index.routes.js';
-
+import client from './database/redis.js';
+import { initSchedulersFetchData } from './service/schedular.service.js';
 
 // Initialize express app
 const app = express();
@@ -33,4 +34,5 @@ app.use('/api',router);
 let httpServer = http.createServer(app);
 httpServer.listen({port:PORT},async ()=>{
     console.log(`Server running at PORT:${PORT}`);
+    initSchedulersFetchData()
 });
