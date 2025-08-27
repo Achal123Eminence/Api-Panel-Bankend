@@ -31,7 +31,7 @@ export async function refreshSportData(){
                 JSON.stringify(events)
               );
               await client.set(
-                `eventsCount:${comp.competitionId}`,
+                `api:eventsCount:${comp.competitionId}`,
                 events.length
               );
 
