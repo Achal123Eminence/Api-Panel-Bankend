@@ -26,6 +26,12 @@ export async function refreshSportData(){
               // 2. Events
               let events = await getEventList(comp.competitionId);
 
+              // Add isAdded field to each event
+              events = events.map((event) => ({
+                ...event,
+                isAdded: false, // default value
+              }));
+
               await client.set(
                 `api:events:${comp.competitionId}`,
                 JSON.stringify(events)
@@ -41,8 +47,11 @@ export async function refreshSportData(){
                 console.log(`Fetching markets for event: ${event.event_name}`);
 
                 // 3. Markets
-                const markets = await getMarketList(event.event_id);
+                let markets = await getMarketList(event.event_id);
                 competitionMarketCount += markets.length; // track markets for valid events
+                
+                markets = markets.map((market) => ({...market, isAdded: false}));
+
                 await client.set(
                   `api:markets:${event.event_id}`,
                   JSON.stringify(markets)
@@ -54,9 +63,7 @@ export async function refreshSportData(){
                   );
 
                   // 4. Market Books
-                  const marketBook = await getBookList(
-                    market.marketId
-                  );
+                  const marketBook = await getBookList(market.marketId);
                   await client.set(
                     `api:marketBook:${market.marketId}`,
                     JSON.stringify(marketBook)
@@ -65,7 +72,10 @@ export async function refreshSportData(){
               }
 
               // Fix competition marketCount (only from valid events)
-              updatedCompetitions.push({...comp,marketCount: competitionMarketCount});
+              updatedCompetitions.push({
+                ...comp,
+                marketCount: competitionMarketCount,
+              });
             }
 
             // Save competitions with corrected marketCount
@@ -87,7 +97,13 @@ export async function refreshAllEventList(){
         ];
 
         for (const sport of sports) {
-          const enrichedEvents = await getAllEventList(sport.id);
+          let enrichedEvents = await getAllEventList(sport.id);
+
+          // Add isAdded field to each event
+          enrichedEvents = enrichedEvents.map((event) => ({
+            ...event,
+            isAdded: false, // default value
+          }));
 
           // Save consolidated list in Redis
           await client.set(

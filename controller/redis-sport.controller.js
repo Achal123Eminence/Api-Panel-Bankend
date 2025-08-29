@@ -1,4 +1,5 @@
 import client from "../database/redis.js";
+import Event from "../model/events.model.js";
 import { getCompetitionListFromRedis, getEventListFromRedis, getMarketListFromRedis, getMarketBookFromRedis } from "../service/local-redis.service.js";
 
 export async function redisCompetitionList(req,res){
@@ -80,21 +81,46 @@ export async function redisMarketBook(req, res) {
     }
 }
 
-export async function redisAllEventData(req,res){
-    try {
-        const { sportId } = req.params;
-        if(!sportId){
-            return res.status(400).json({error:"sportId is required!"});
-        };
-
-        const result = await client.get(`api:eventList:${sportId}`);
-        if (!result) {
-            return res.status(404).json({ error: "No event list found in Redis for this sportId" });
-        }
-
-        return res.status(200).json(JSON.parse(result));
-    } catch (err) {
-        console.error("Redis All Event Error:",err.message);
-        return res.status(500).json({error: err.message});
+export async function redisAllEventData(req, res) {
+  try {
+    const { sportId } = req.params;
+    if (!sportId) {
+      return res.status(400).json({ error: "sportId is required!" });
     }
+
+    // 1. Fetch events from Redis
+    const result = await client.get(`api:eventList:${sportId}`);
+    if (!result) {
+      return res.status(404).json({ error: "No event list found in Redis for this sportId" });
+    }
+
+    let redisData = JSON.parse(result);
+
+    // Extract events array safely
+    let redisEvents = Array.isArray(redisData.events) ? redisData.events : [];
+
+    // 2. Get all added events from MongoDB for this sport
+    const dbEvents = await Event.find({ sportId, isAdded: true }).select("eventId isAdded");
+
+    // Convert DB events to a Map for quick lookup
+    const dbEventMap = new Map(dbEvents.map(e => [e.eventId, e.isAdded]));
+
+    // 3. Update Redis events list based on DB isAdded flag
+    redisEvents = redisEvents.map(event => {
+      if (dbEventMap.has(event.eventId)) {
+        return { ...event, isAdded: true };
+      }
+      return { ...event, isAdded: false };
+    });
+
+    // 4. Send response
+     return res.status(200).json({
+      ...redisData,
+      events: redisEvents,
+    });
+
+  } catch (err) {
+    console.error("Redis All Event Error:", err.message);
+    return res.status(500).json({ error: err.message });
+  }
 }
