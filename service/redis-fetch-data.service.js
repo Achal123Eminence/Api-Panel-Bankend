@@ -10,7 +10,7 @@ export async function refreshSportData(){
         ];
 
         for (const sport of sports) {
-            console.log(`Fetching competitions for ${sport.name}:${sport.id}...`);
+            // console.log(`Fetching competitions for ${sport.name}:${sport.id}...`);
 
             // 1. Competitions
             const competitions = await getCompetitionList(sport.id);
@@ -19,9 +19,9 @@ export async function refreshSportData(){
             const updatedCompetitions = [];
 
             for (const comp of competitions) {
-              console.log(
-                `Fetching events for competition: ${comp.competitionName}`
-              );
+              // console.log(
+              //   `Fetching events for competition: ${comp.competitionName}`
+              // );
 
               // 2. Events
               let events = await getEventList(comp.competitionId);
@@ -44,7 +44,7 @@ export async function refreshSportData(){
               let competitionMarketCount = 0;
 
               for (const event of events) {
-                console.log(`Fetching markets for event: ${event.event_name}`);
+                // console.log(`Fetching markets for event: ${event.event_name}`);
 
                 // 3. Markets
                 let markets = await getMarketList(event.event_id);
@@ -58,9 +58,9 @@ export async function refreshSportData(){
                 );
 
                 for (const market of markets) {
-                  console.log(
-                    `Fetching market book for marketId: ${market.marketId}`
-                  );
+                  // console.log(
+                  //   `Fetching market book for marketId: ${market.marketId}`
+                  // );
 
                   // 4. Market Books
                   const marketBook = await getBookList(market.marketId);
@@ -115,7 +115,7 @@ export async function refreshAllEventList(){
             })
           );
 
-          console.log(`Updated All Event List for ${sport.name} (${sport.id})`);
+          // console.log(`Updated All Event List for ${sport.name} (${sport.id})`);
         }
     } catch (error) {
         console.error("Error in refreshEventLists:", err.message);

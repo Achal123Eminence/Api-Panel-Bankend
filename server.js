@@ -10,6 +10,7 @@ import databaseConnection from './database/db.js';
 import router from './routes/index.routes.js';
 import client from './database/redis.js';
 import { initSchedulersFetchData } from './service/schedular.service.js';
+import { decryptRequestMiddleware, encryptResponseMiddleware } from './service/crypto.service.js';
 
 // Initialize express app
 const app = express();
@@ -18,9 +19,11 @@ databaseConnection();
 // Apply middleware to enhance app security and functionality
 app.use(cors());
 app.use(helmet());
-app.use(express.json());
-app.use(express.urlencoded({extended:true}));
-app.use(express.text());
+// app.use(express.json());
+// app.use(express.urlencoded({extended:true}));
+app.use(express.text({ type: "*/*" }));
+app.use(decryptRequestMiddleware);
+app.use(encryptResponseMiddleware);
 
 // Health check route to test if server is running
 app.get('/ping', (req, res) => {

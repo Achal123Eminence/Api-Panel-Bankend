@@ -3,12 +3,12 @@ import { eventValidation } from "../validation/events.validation.js";
 
 export const addEventController = async (req, res) => {
   try {
-    const { error, value } = eventValidation.validate(req.body);
-    if (error) {
-      return res.status(400).json({ success: false, message: error.details[0].message });
-    }
+    // const { error, value } = eventValidation.validate(req.body);
+    // if (error) {
+    //   return res.status(400).json({ success: false, message: error.details[0].message });
+    // }
 
-    const event = await addEventService(value);
+    const event = await addEventService(req.body);
 
     return res.status(201).json({
       success: true,

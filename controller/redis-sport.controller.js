@@ -10,7 +10,6 @@ export async function redisCompetitionList(req,res){
         }
 
         const competitions = await getCompetitionListFromRedis(sportId);
-        console.log(competitions)
 
         
         // Map competitions to include eventCount from Redis

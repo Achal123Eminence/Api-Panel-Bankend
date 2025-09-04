@@ -8,11 +8,9 @@ import client from "../database/redis.js";
 
 export async function getCompetitionListFromRedis(sportId) {
     try {
-        console.log(sportId,"")
         const redisKey = `api:competitions:${sportId}`;
-        console.log(redisKey,"redisKey")
         const data = await client.get(redisKey);
-        console.log(data,"data")
+
 
 
         if (!data) {
