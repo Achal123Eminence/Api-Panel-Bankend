@@ -34,14 +34,21 @@ export async function redisCompetitionList(req,res){
 
 export async function redisEventList(req, res) {
     try {
-        const { competitionId } = req.params;
+      const { competitionId } = req.params;
 
-        if (!competitionId) {
-            return res.status(400).json({ error: "competitionId are required" });
-        }
+      if (!competitionId) {
+        return res.status(400).json({ error: "competitionId are required" });
+      }
 
-        const events = await getEventListFromRedis(competitionId);
-        return res.status(200).json({ competitionId, events });
+      const events = await getEventListFromRedis(competitionId);
+
+      // Ensure it's an array
+      let sortedEvents = Array.isArray(events) ? [...events] : [];
+
+      // Sort by openDate (latest first)
+      sortedEvents.sort((a, b) => new Date(b.open_date) - new Date(a.open_date));
+
+      return res.status(200).json({ competitionId, events: sortedEvents });
     } catch (err) {
         console.error("Redis Event List Error:", err.message);
         return res.status(500).json({ error: err.message });
@@ -112,7 +119,10 @@ export async function redisAllEventData(req, res) {
       return { ...event, isAdded: false };
     });
 
-    // 4. Send response
+    // 5. Sort by openDate (latest first)
+    redisEvents.sort((a, b) => new Date(b.openDate) - new Date(a.openDate));
+
+    // 6. Send response
      return res.status(200).json({
       ...redisData,
       events: redisEvents,

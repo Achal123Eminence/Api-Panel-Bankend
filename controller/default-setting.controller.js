@@ -653,7 +653,7 @@ export const createDefault = async (req, res) => {
       {
         id: "14",
         marketName: "Over Total",
-        type: "full",
+        type: "partial",
         sport: "4",
         status: false,
         gradeType: "A",
@@ -669,7 +669,7 @@ export const createDefault = async (req, res) => {
       {
         id: "14",
         marketName: "Over Total",
-        type: "full",
+        type: "partial",
         sport: "4",
         status: false,
         gradeType: "B",
@@ -685,7 +685,7 @@ export const createDefault = async (req, res) => {
       {
         id: "14",
         marketName: "Over Total",
-        type: "full",
+        type: "partial",
         sport: "4",
         status: false,
         gradeType: "C",
@@ -702,7 +702,7 @@ export const createDefault = async (req, res) => {
       {
         id: "15",
         marketName: "Over Line",
-        type: "full",
+        type: "partial",
         sport: "4",
         status: false,
         gradeType: "A",
@@ -718,7 +718,7 @@ export const createDefault = async (req, res) => {
       {
         id: "15",
         marketName: "Over Line",
-        type: "full",
+        type: "partial",
         sport: "4",
         status: false,
         gradeType: "B",
@@ -734,7 +734,7 @@ export const createDefault = async (req, res) => {
       {
         id: "15",
         marketName: "Over Line",
-        type: "full",
+        type: "partial",
         sport: "4",
         status: false,
         gradeType: "C",
@@ -750,8 +750,8 @@ export const createDefault = async (req, res) => {
 
       {
         id: "16",
-        marketName: "Run Line",
-        type: "full",
+        marketName: "Runs Line",
+        type: "partial",
         sport: "4",
         status: false,
         gradeType: "A",
@@ -766,8 +766,8 @@ export const createDefault = async (req, res) => {
       },
       {
         id: "16",
-        marketName: "Run Line",
-        type: "full",
+        marketName: "Runs Line",
+        type: "partial",
         sport: "4",
         status: false,
         gradeType: "B",
@@ -782,8 +782,8 @@ export const createDefault = async (req, res) => {
       },
       {
         id: "16",
-        marketName: "Run Line",
-        type: "full",
+        marketName: "Runs Line",
+        type: "partial",
         sport: "4",
         status: false,
         gradeType: "C",
@@ -800,7 +800,7 @@ export const createDefault = async (req, res) => {
       {
         id: "17",
         marketName: "Batter",
-        type: "full",
+        type: "partial",
         sport: "4",
         status: false,
         gradeType: "A",
@@ -816,7 +816,7 @@ export const createDefault = async (req, res) => {
       {
         id: "17",
         marketName: "Batter",
-        type: "full",
+        type: "partial",
         sport: "4",
         status: false,
         gradeType: "B",
@@ -832,7 +832,7 @@ export const createDefault = async (req, res) => {
       {
         id: "17",
         marketName: "Batter",
-        type: "full",
+        type: "partial",
         sport: "4",
         status: false,
         gradeType: "C",
@@ -998,7 +998,7 @@ export const createDefault = async (req, res) => {
       {
         id: "4",
         marketName: "Set Winner",
-        type: "full",
+        type: "partial",
         sport: "2",
         status: false,
         gradeType: "A",
@@ -1014,7 +1014,7 @@ export const createDefault = async (req, res) => {
       {
         id: "4",
         marketName: "Set Winner",
-        type: "full",
+        type: "partial",
         sport: "2",
         status: false,
         gradeType: "B",
@@ -1030,7 +1030,7 @@ export const createDefault = async (req, res) => {
       {
         id: "4",
         marketName: "Set Winner",
-        type: "full",
+        type: "partial",
         sport: "2",
         status: false,
         gradeType: "C",
@@ -1048,7 +1048,7 @@ export const createDefault = async (req, res) => {
       {
         id: "5",
         marketName: "Correct Score",
-        type: "full",
+        type: "partial",
         sport: "2",
         status: false,
         gradeType: "A",
@@ -1064,7 +1064,7 @@ export const createDefault = async (req, res) => {
       {
         id: "5",
         marketName: "Correct Score",
-        type: "full",
+        type: "partial",
         sport: "2",
         status: false,
         gradeType: "B",
@@ -1080,7 +1080,7 @@ export const createDefault = async (req, res) => {
       {
         id: "5",
         marketName: "Correct Score",
-        type: "full",
+        type: "partial",
         sport: "2",
         status: false,
         gradeType: "C",
@@ -1443,7 +1443,7 @@ export const createDefault = async (req, res) => {
       {
         id: "4",
         marketName: "Over/Under",
-        type: "full",
+        type: "partial",
         sport: "1",
         status: false,
         gradeType: "A",
@@ -1459,7 +1459,7 @@ export const createDefault = async (req, res) => {
       {
         id: "4",
         marketName: "Over/Under",
-        type: "full",
+        type: "partial",
         sport: "1",
         status: false,
         gradeType: "B",
@@ -1475,7 +1475,7 @@ export const createDefault = async (req, res) => {
       {
         id: "4",
         marketName: "Over/Under",
-        type: "full",
+        type: "partial",
         sport: "1",
         status: false,
         gradeType: "C",
@@ -1786,7 +1786,7 @@ export const createDefault = async (req, res) => {
       {
         id: "11",
         marketName: "Player To Score",
-        type: "full",
+        type: "partial",
         sport: "1",
         status: false,
         gradeType: "A",
@@ -1802,7 +1802,7 @@ export const createDefault = async (req, res) => {
       {
         id: "11",
         marketName: "Player To Score",
-        type: "full",
+        type: "partial",
         sport: "1",
         status: false,
         gradeType: "B",
@@ -1818,7 +1818,7 @@ export const createDefault = async (req, res) => {
       {
         id: "11",
         marketName: "Player To Score",
-        type: "full",
+        type: "partial",
         sport: "1",
         status: false,
         gradeType: "C",

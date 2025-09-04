@@ -41,8 +41,14 @@ export function encryptResponseMiddleware(req, res, next) {
   const oldJson = res.json;
   res.json = function (data) {
     try {
-      const encrypted = encrypt(data);
-      return oldJson.call(this, { payload: encrypted });
+      // Only encrypt if status is success (200-299)
+      if (this.statusCode >= 200 && this.statusCode < 300) {
+        const encrypted = encrypt(data);
+        return oldJson.call(this, { payload: encrypted });
+      }
+
+      // For errors, send plain JSON (so frontend can read error codes)
+      return oldJson.call(this, data);
     } catch (err) {
       console.error("Response encryption failed:", err.message);
       return oldJson.call(this, { error: "Encryption failed" });

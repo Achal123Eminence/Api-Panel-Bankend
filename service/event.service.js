@@ -35,7 +35,7 @@ async function getLimitsForGrade(gradeType, sportId) {
 }
 
 // attach limits into markets for competition
-async function buildCompetitionMarkets(marketsFromEvent, limits) {
+async function buildEventMarkets(marketsFromEvent, limits) {
   const currencies = await Currency.find();
 
   return marketsFromEvent
@@ -78,13 +78,175 @@ async function buildCompetitionMarkets(marketsFromEvent, limits) {
     .filter(Boolean); // remove nulls
 }
 
+// buildEventMarketsWinner
+async function buildEventMarketsWinner(eventData, limits) {
+  const currencies = await Currency.find();
+
+  return limits
+    .filter(l => l.marketName?.toLowerCase() === "match odds") // only take Match Odds limit
+    .map(limit => {
+      // Special case: if event marketName == "Winner", replace it with Match Odds
+      if (eventData.marketName?.toLowerCase() === "winner") {
+        return {
+          marketId: eventData.marketId, // use Winner's marketId from event
+          marketName: "Match Odds",     // force marketName as "Match Odds"
+          type: "betfair",
+          status: true,
+          limit: currencies.map(c => ({
+            name: c.name,
+            baseCurrency: c.isBase,
+            preMinStake: (Number(limit.preMinStake) || 0) * c.value,
+            preMaxStake: (Number(limit.preMaxStake) || 0) * c.value,
+            preMaxPL: (Number(limit.preMaxPL) || 0) * c.value,
+            minStake: (Number(limit.minStake) || 0) * c.value,
+            maxStake: (Number(limit.maxStake) || 0) * c.value,
+            maxPL: (Number(limit.maxPL) || 0) * c.value,
+            delay: limit.delay ?? 0,
+            oddsLimit: limit.oddsLimit ?? 0,
+            b2CpreMinStake: (Number(limit.preMinStake) || 0) * c.value,
+            b2CpreMaxStake: (Number(limit.preMaxStake) || 0) * c.value,
+            b2CpreMaxPL: (Number(limit.preMaxPL) || 0) * c.value,
+            b2CminStake: (Number(limit.minStake) || 0) * c.value,
+            b2CmaxStake: (Number(limit.maxStake) || 0) * c.value,
+            b2CmaxPL: (Number(limit.maxPL) || 0) * c.value,
+            b2Cdelay: limit.delay ?? 0,
+            b2CoddsLimit: limit.oddsLimit ?? 0,
+          })),
+        };
+      }
+
+      return null;
+    })
+    .filter(Boolean); // remove nulls
+}
+
+
+async function buildCompetitionMarkets(marketsFromEvent, limits) {
+  const currencies = await Currency.find();
+
+  return limits.map(limit => {
+    // Try to find this market in marketsFromEvent
+    const matchingMarket = marketsFromEvent.find(
+      m => m.marketName?.toLowerCase() === limit.marketName?.toLowerCase()
+    );
+
+    return {
+      // Prefer marketId from event, else fallback to limit
+      marketId: matchingMarket ? matchingMarket.marketId : limit.id,
+      marketName: matchingMarket ? matchingMarket.marketName : limit.marketName,
+      type: "betfair",
+      status: true,
+      limit: currencies.map(c => ({
+        name: c.name,
+        baseCurrency: c.isBase,
+        preMinStake: (Number(limit.preMinStake) || 0) * c.value,
+        preMaxStake: (Number(limit.preMaxStake) || 0) * c.value,
+        preMaxPL: (Number(limit.preMaxPL) || 0) * c.value,
+        minStake: (Number(limit.minStake) || 0) * c.value,
+        maxStake: (Number(limit.maxStake) || 0) * c.value,
+        maxPL: (Number(limit.maxPL) || 0) * c.value,
+        delay: limit.delay ?? 0,
+        oddsLimit: limit.oddsLimit ?? 0,
+        b2CpreMinStake: (Number(limit.preMinStake) || 0) * c.value,
+        b2CpreMaxStake: (Number(limit.preMaxStake) || 0) * c.value,
+        b2CpreMaxPL: (Number(limit.preMaxPL) || 0) * c.value,
+        b2CminStake: (Number(limit.minStake) || 0) * c.value,
+        b2CmaxStake: (Number(limit.maxStake) || 0) * c.value,
+        b2CmaxPL: (Number(limit.maxPL) || 0) * c.value,
+        b2Cdelay: limit.delay ?? 0,
+        b2CoddsLimit: limit.oddsLimit ?? 0
+      }))
+    };
+  });
+}
+
+// buildCompetitionMarketsWinner
+async function buildCompetitionMarketsWinner(eventData, limits) {
+  const currencies = await Currency.find();
+
+  return limits.map(limit => {
+    // Special case: if event marketName == "Winner" and limit.marketName == "Match Odds"
+    if (
+      eventData.marketName?.toLowerCase() === "winner" &&
+      limit.marketName?.toLowerCase() === "match odds"
+    ) {
+      return {
+        marketId: eventData.marketId, // use Winner's marketId from event
+        marketName: "Match Odds",     // force marketName as "Match Odds"
+        type: "betfair",
+        status: true,
+        limit: currencies.map(c => ({
+          name: c.name,
+          baseCurrency: c.isBase,
+          preMinStake: (Number(limit.preMinStake) || 0) * c.value,
+          preMaxStake: (Number(limit.preMaxStake) || 0) * c.value,
+          preMaxPL: (Number(limit.preMaxPL) || 0) * c.value,
+          minStake: (Number(limit.minStake) || 0) * c.value,
+          maxStake: (Number(limit.maxStake) || 0) * c.value,
+          maxPL: (Number(limit.maxPL) || 0) * c.value,
+          delay: limit.delay ?? 0,
+          oddsLimit: limit.oddsLimit ?? 0,
+          b2CpreMinStake: (Number(limit.preMinStake) || 0) * c.value,
+          b2CpreMaxStake: (Number(limit.preMaxStake) || 0) * c.value,
+          b2CpreMaxPL: (Number(limit.preMaxPL) || 0) * c.value,
+          b2CminStake: (Number(limit.minStake) || 0) * c.value,
+          b2CmaxStake: (Number(limit.maxStake) || 0) * c.value,
+          b2CmaxPL: (Number(limit.maxPL) || 0) * c.value,
+          b2Cdelay: limit.delay ?? 0,
+          b2CoddsLimit: limit.oddsLimit ?? 0,
+        })),
+      };
+    }
+
+    // Fallback to normal behavior
+    const matchingMarket = eventData.markets.find(
+      m => m.marketName?.toLowerCase() === limit.marketName?.toLowerCase()
+    );
+
+    return {
+      marketId: matchingMarket ? matchingMarket.marketId : limit.id,
+      marketName: matchingMarket ? matchingMarket.marketName : limit.marketName,
+      type: "betfair",
+      status: true,
+      limit: currencies.map(c => ({
+        name: c.name,
+        baseCurrency: c.isBase,
+        preMinStake: (Number(limit.preMinStake) || 0) * c.value,
+        preMaxStake: (Number(limit.preMaxStake) || 0) * c.value,
+        preMaxPL: (Number(limit.preMaxPL) || 0) * c.value,
+        minStake: (Number(limit.minStake) || 0) * c.value,
+        maxStake: (Number(limit.maxStake) || 0) * c.value,
+        maxPL: (Number(limit.maxPL) || 0) * c.value,
+        delay: limit.delay ?? 0,
+        oddsLimit: limit.oddsLimit ?? 0,
+        b2CpreMinStake: (Number(limit.preMinStake) || 0) * c.value,
+        b2CpreMaxStake: (Number(limit.preMaxStake) || 0) * c.value,
+        b2CpreMaxPL: (Number(limit.preMaxPL) || 0) * c.value,
+        b2CminStake: (Number(limit.minStake) || 0) * c.value,
+        b2CmaxStake: (Number(limit.maxStake) || 0) * c.value,
+        b2CmaxPL: (Number(limit.maxPL) || 0) * c.value,
+        b2Cdelay: limit.delay ?? 0,
+        b2CoddsLimit: limit.oddsLimit ?? 0,
+      })),
+    };
+  });
+}
+
+
 export async function addEventService(eventData) {
   try {
     let competition = await Competition.findOne({ competitionId: eventData.competitionId });
     if (!competition) {
       let compLimits = await getLimitsForGrade(eventData.competitionGrade, eventData.sportId);
 
-      let compMarkets = await buildCompetitionMarkets(eventData.markets, compLimits);
+      let compMarkets;
+
+      if (eventData.marketName?.toLowerCase() === "winner") {
+        compMarkets = await buildCompetitionMarketsWinner(eventData,compLimits);
+      } else {
+        compMarkets = await buildCompetitionMarkets(eventData.markets,compLimits);
+      }
+
 
       const competitionPayload = {
         competitionId: eventData.competitionId,
@@ -110,7 +272,13 @@ export async function addEventService(eventData) {
 
     let eventLimits = await getLimitsForGrade(eventData.eventGrade, eventData.sportId);
 
-    let eventMarkets = await buildCompetitionMarkets(eventData.markets, eventLimits);
+    let eventMarkets;
+
+    if (eventData.marketName?.toLowerCase() === "winner") {
+        eventMarkets = await buildEventMarketsWinner(eventData,eventLimits);
+      } else {
+        eventMarkets = await buildEventMarkets(eventData.markets,eventLimits);
+      }
 
     let onlyMarketIdArray = eventMarkets.map(m => m.marketId); //logic to get only marketId pushed in a array from eventMarkets
     let unixDateCr = Math.floor(Date.now() / 1000);//get current time stamp in it
