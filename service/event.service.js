@@ -11,10 +11,14 @@ const inningInfo = {
   "100balls": {perInningOver:10,totalOver:15,maxInningNumber:2},
   "oneDay": {perInningOver:10,totalOver:15,maxInningNumber:2},
   "test": {perInningOver:10,totalOver:15,maxInningNumber:2},
+};
+
+export function generateRandom8Digit() {
+  return Math.floor(10000000 + Math.random() * 90000000); // always 8 digits
 }
 
 // helper to fetch filtered limits
-async function getLimitsForGrade(gradeType, sportId) {
+export async function getLimitsForGrade(gradeType, sportId) {
   let cachedData = await client.get("defaultSetting");
   let settings = cachedData ? JSON.parse(cachedData) : null;
 
@@ -35,51 +39,101 @@ async function getLimitsForGrade(gradeType, sportId) {
 }
 
 // attach limits into markets for competition
-async function buildEventMarkets(marketsFromEvent, limits) {
+export async function buildEventMarkets(marketsFromEvent, limits, sportId) {
   const currencies = await Currency.find();
+  // console.log(currencies,"currencies currencies")
 
-  return marketsFromEvent
-    .filter(market => 
+  // Special market names we always want
+  const alwaysInclude = ["bookmaker", "fancy", "premium fancy", "toss"];
+
+   let eventMarkets = marketsFromEvent
+    .filter(market =>
       limits.some(l => l.marketName?.toLowerCase() === market.marketName?.toLowerCase())
     )
     .map(market => {
       const matchingLimits = limits.find(
         l => l.marketName?.toLowerCase() === market.marketName?.toLowerCase()
       );
-      if (!matchingLimits) return null; 
+      if (!matchingLimits) return null;
 
       return {
         marketId: market.marketId,
         marketName: market.marketName,
-        type: "betfair",
-        status: true,
-        limit: currencies.map(c => ({
-          name: c.name,
-          baseCurrency: c.isBase,
-          preMinStake: (Number(matchingLimits.preMinStake) || 0) * c.value,
-          preMaxStake: (Number(matchingLimits.preMaxStake) || 0) * c.value,
-          preMaxPL: (Number(matchingLimits.preMaxPL) || 0) * c.value,
-          minStake: (Number(matchingLimits.minStake) || 0) * c.value,
-          maxStake: (Number(matchingLimits.maxStake) || 0) * c.value,
-          maxPL: (Number(matchingLimits.maxPL) || 0) * c.value,
-          delay: matchingLimits.delay ?? 0,
-          oddsLimit: matchingLimits.oddsLimit ?? 0,   // ✅ FIXED
-          b2CpreMinStake: (Number(matchingLimits.preMinStake) || 0) * c.value,
-          b2CpreMaxStake: (Number(matchingLimits.preMaxStake) || 0) * c.value,
-          b2CpreMaxPL: (Number(matchingLimits.preMaxPL) || 0) * c.value,
-          b2CminStake: (Number(matchingLimits.minStake) || 0) * c.value,
-          b2CmaxStake: (Number(matchingLimits.maxStake) || 0) * c.value,
-          b2CmaxPL: (Number(matchingLimits.maxPL) || 0) * c.value,
-          b2Cdelay: matchingLimits.delay ?? 0,
-          b2CoddsLimit: matchingLimits.oddsLimit ?? 0
-        }))
+        limit: currencies.map(c => {
+          // 🔑 find the limit for this currency inside matchingLimits.limit
+          const currencyLimit = matchingLimits.limit.find(l => l.name === c.name);
+
+          return {
+            name: c.name,
+            baseCurrency: c.isBase,
+            preMinStake: (Number(currencyLimit?.preMinStake) || 0),
+            preMaxStake: (Number(currencyLimit?.preMaxStake) || 0),
+            preMaxPL: (Number(currencyLimit?.preMaxPL) || 0),
+            minStake: (Number(currencyLimit?.minStake) || 0),
+            maxStake: (Number(currencyLimit?.maxStake) || 0),
+            maxPL: (Number(currencyLimit?.maxPL) || 0),
+            delay: Number(currencyLimit?.delay) || 0,
+            oddsLimit: Number(currencyLimit?.oddsLimit) || 0,
+            b2CpreMinStake: (Number(currencyLimit?.b2CpreMinStake) || 0),
+            b2CpreMaxStake: (Number(currencyLimit?.b2CpreMaxStake) || 0),
+            b2CpreMaxPL: (Number(currencyLimit?.b2CpreMaxPL) || 0),
+            b2CminStake: (Number(currencyLimit?.b2CminStake) || 0),
+            b2CmaxStake: (Number(currencyLimit?.b2CmaxStake) || 0),
+            b2CmaxPL: (Number(currencyLimit?.b2CmaxPL) || 0),
+            b2Cdelay: Number(currencyLimit?.b2Cdelay) || 0,
+            b2CoddsLimit: Number(currencyLimit?.b2CoddsLimit) || 0
+          };
+        })
       };
     })
     .filter(Boolean); // remove nulls
+
+  // 2. Add missing special markets if required
+  if (["4", "1", "2"].includes(sportId)) {
+    const existingNames = eventMarkets.map(m => m.marketName?.toLowerCase());
+    
+    
+    for (const limit of limits) {
+      if (alwaysInclude.includes(limit.marketName?.toLowerCase())) {
+        if (!existingNames.includes(limit.marketName?.toLowerCase())) {
+          eventMarkets.push({
+            marketId: `${limit.marketId}`,
+            marketName: limit.marketName,
+            limit: currencies.map(c => {
+              const currencyLimit = limit.limit.find(l => l.name === c.name);
+
+              return {
+                name: c.name,
+                baseCurrency: c.isBase,
+                preMinStake: (Number(currencyLimit?.preMinStake) || 0),
+                preMaxStake: (Number(currencyLimit?.preMaxStake) || 0),
+                preMaxPL: (Number(currencyLimit?.preMaxPL) || 0),
+                minStake: (Number(currencyLimit?.minStake) || 0),
+                maxStake: (Number(currencyLimit?.maxStake) || 0),
+                maxPL: (Number(currencyLimit?.maxPL) || 0),
+                delay: Number(currencyLimit?.delay) || 0,
+                oddsLimit: Number(currencyLimit?.oddsLimit) || 0,
+                b2CpreMinStake: (Number(currencyLimit?.b2CpreMinStake) || 0),
+                b2CpreMaxStake: (Number(currencyLimit?.b2CpreMaxStake) || 0),
+                b2CpreMaxPL: (Number(currencyLimit?.b2CpreMaxPL) || 0),
+                b2CminStake: (Number(currencyLimit?.b2CminStake) || 0),
+                b2CmaxStake: (Number(currencyLimit?.b2CmaxStake) || 0),
+                b2CmaxPL: (Number(currencyLimit?.b2CmaxPL) || 0),
+                b2Cdelay: Number(currencyLimit?.b2Cdelay) || 0,
+                b2CoddsLimit: Number(currencyLimit?.b2CoddsLimit) || 0
+              };
+            })
+          });
+        }
+      }
+    }
+  }
+
+  return eventMarkets;
 }
 
 // buildEventMarketsWinner
-async function buildEventMarketsWinner(eventData, limits) {
+async function buildEventMarketsWinner(eventData, limits, sportId) {
   const currencies = await Currency.find();
 
   return limits
@@ -90,8 +144,6 @@ async function buildEventMarketsWinner(eventData, limits) {
         return {
           marketId: eventData.marketId, // use Winner's marketId from event
           marketName: "Match Odds",     // force marketName as "Match Odds"
-          type: "betfair",
-          status: true,
           limit: currencies.map(c => ({
             name: c.name,
             baseCurrency: c.isBase,
@@ -121,7 +173,7 @@ async function buildEventMarketsWinner(eventData, limits) {
 }
 
 
-async function buildCompetitionMarkets(marketsFromEvent, limits) {
+export async function buildCompetitionMarkets(marketsFromEvent, limits, sportId) {
   const currencies = await Currency.find();
 
   return limits.map(limit => {
@@ -134,8 +186,6 @@ async function buildCompetitionMarkets(marketsFromEvent, limits) {
       // Prefer marketId from event, else fallback to limit
       marketId: matchingMarket ? matchingMarket.marketId : limit.id,
       marketName: matchingMarket ? matchingMarket.marketName : limit.marketName,
-      type: "betfair",
-      status: true,
       limit: currencies.map(c => ({
         name: c.name,
         baseCurrency: c.isBase,
@@ -161,7 +211,7 @@ async function buildCompetitionMarkets(marketsFromEvent, limits) {
 }
 
 // buildCompetitionMarketsWinner
-async function buildCompetitionMarketsWinner(eventData, limits) {
+async function buildCompetitionMarketsWinner(eventData, limits, sportId) {
   const currencies = await Currency.find();
 
   return limits.map(limit => {
@@ -173,8 +223,6 @@ async function buildCompetitionMarketsWinner(eventData, limits) {
       return {
         marketId: eventData.marketId, // use Winner's marketId from event
         marketName: "Match Odds",     // force marketName as "Match Odds"
-        type: "betfair",
-        status: true,
         limit: currencies.map(c => ({
           name: c.name,
           baseCurrency: c.isBase,
@@ -206,8 +254,6 @@ async function buildCompetitionMarketsWinner(eventData, limits) {
     return {
       marketId: matchingMarket ? matchingMarket.marketId : limit.id,
       marketName: matchingMarket ? matchingMarket.marketName : limit.marketName,
-      type: "betfair",
-      status: true,
       limit: currencies.map(c => ({
         name: c.name,
         baseCurrency: c.isBase,
@@ -242,9 +288,9 @@ export async function addEventService(eventData) {
       let compMarkets;
 
       if (eventData.marketName?.toLowerCase() === "winner") {
-        compMarkets = await buildCompetitionMarketsWinner(eventData,compLimits);
+        compMarkets = await buildCompetitionMarketsWinner(eventData,compLimits,eventData.sportId);
       } else {
-        compMarkets = await buildCompetitionMarkets(eventData.markets,compLimits);
+        compMarkets = await buildCompetitionMarkets(eventData.markets,compLimits,eventData.sportId);
       }
 
 
@@ -270,19 +316,33 @@ export async function addEventService(eventData) {
       throw new Error("Event Already Exist!");
     }
 
-    let eventLimits = await getLimitsForGrade(eventData.eventGrade, eventData.sportId);
+    // let eventLimits = await getLimitsForGrade(eventData.eventGrade, eventData.sportId);
 
     let eventMarkets;
 
     if (eventData.marketName?.toLowerCase() === "winner") {
-        eventMarkets = await buildEventMarketsWinner(eventData,eventLimits);
+        eventMarkets = await buildEventMarketsWinner(eventData,competition.markets,eventData.sportId);
       } else {
-        eventMarkets = await buildEventMarkets(eventData.markets,eventLimits);
+        eventMarkets = await buildEventMarkets(eventData.markets,competition.markets,eventData.sportId);
       }
 
     let onlyMarketIdArray = eventMarkets.map(m => m.marketId); //logic to get only marketId pushed in a array from eventMarkets
     let unixDateCr = Math.floor(Date.now() / 1000);//get current time stamp in it
     let inningInfoCr = inningInfo[eventData.matchType] || null;// inningInfo filter it with eventData.matchType == inningInfo.eventData.matchType
+
+    //Toss Info data
+    const runnersId = generateRandom8Digit();
+    const fancyId = `${eventData.eventId}-${runnersId}`;
+    const mType = eventData.marketName?.toLowerCase() === "winner" ? "winner" : "normal";
+
+    const tossInfo = {
+      eventId: eventData.eventId,
+      eventName: eventData.eventName,
+      runnersId,
+      fancyId,
+      mType,
+      openDate: eventData.openDate,
+    };
 
     const eventPayload = {
       eventId: eventData.eventId,
@@ -300,6 +360,7 @@ export async function addEventService(eventData) {
       marketId: eventData.marketId,
       eventGrade: eventData.eventGrade,
       unixDate: unixDateCr,
+      mType:mType,
       matchRunners: eventData.matchRunners || [],
       bmRunners: eventData.matchRunners || [],
       totalMatched: eventData.totalMatched || "",
@@ -309,6 +370,7 @@ export async function addEventService(eventData) {
     // add matchType + inningInfo only for sportId=4
     if (eventData.sportId === "4") {
       eventPayload.matchType = eventData.matchType;
+      eventPayload.tossInfo = tossInfo;
       eventPayload.inningInfo = inningInfoCr;
     }
 
@@ -318,5 +380,39 @@ export async function addEventService(eventData) {
     return newEvent;
   } catch (error) {
     throw new Error(error.message);
+  }
+}
+
+
+//TOSS INFO UPDATE SCHEDULAR FUNCTION ( Close toss markets 2 hours before event start )
+export async function closeTossMarketsBeforeStart() {
+  try {
+    console.log("Update tossInfo Schedular for close date started!! ⚡⚡⚡⚡⚡")
+    const now = new Date();
+
+    // Find all events that have tossInfo with status OPEN
+    const events = await Event.find({
+      "tossInfo.status": "OPEN",
+      "tossInfo.openDate": { $exists: true, $ne: null }
+    });
+
+    for (const event of events) {
+      const tossOpenDate = new Date(event.tossInfo.openDate);
+
+      // Calculate cutoff time (2 hours before event start)
+      const cutoffTime = new Date(tossOpenDate.getTime() - 2 * 60 * 60 * 1000);
+
+      if (now >= cutoffTime) {
+        // Update status to CLOSED
+        event.tossInfo.status = "CLOSED";
+        await event.save();
+
+        console.log(
+          `Toss market CLOSED for Event ${event.eventId} (${event.eventName}) at ${now.toISOString()}`
+        );
+      }
+    }
+  } catch (error) {
+    console.error("Error in closeTossMarketsBeforeStart:", error.message);
   }
 }

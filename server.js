@@ -9,7 +9,7 @@ import { PORT } from './common/constants.js';
 import databaseConnection from './database/db.js';
 import router from './routes/index.routes.js';
 import client from './database/redis.js';
-import { initSchedulersFetchData } from './service/schedular.service.js';
+import { initSchedulersFetchData, manualSchedular } from './service/schedular.service.js';
 import { decryptRequestMiddleware, encryptResponseMiddleware } from './service/crypto.service.js';
 
 // Initialize express app
@@ -38,4 +38,5 @@ let httpServer = http.createServer(app);
 httpServer.listen({port:PORT},async ()=>{
     console.log(`Server running at PORT:${PORT}`);
     initSchedulersFetchData()
+    manualSchedular();
 });

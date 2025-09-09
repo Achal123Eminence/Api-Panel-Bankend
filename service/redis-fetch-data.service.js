@@ -10,7 +10,7 @@ export async function refreshSportData(){
         ];
 
         for (const sport of sports) {
-            // console.log(`Fetching competitions for ${sport.name}:${sport.id}...`);
+            console.log(`Fetching competitions for ${sport.name}:${sport.id}...`);
 
             // 1. Competitions
             const competitions = await getCompetitionList(sport.id);
@@ -19,18 +19,40 @@ export async function refreshSportData(){
             const updatedCompetitions = [];
 
             for (const comp of competitions) {
-              // console.log(
-              //   `Fetching events for competition: ${comp.competitionName}`
-              // );
+              console.log(
+                `Fetching events for competition: ${comp.competitionName}`
+              );
 
               // 2. Events
               let events = await getEventList(comp.competitionId);
 
               // Add isAdded field to each event
-              events = events.map((event) => ({
-                ...event,
-                isAdded: false, // default value
-              }));
+              events = events.map((event) => {
+                let formattedDate = null;
+
+                if (event.open_date) {
+                  const dateObj = new Date(event.open_date);
+                  formattedDate = dateObj.toLocaleString("en-US", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    hour12: true,
+                  });
+
+                  // remove comma from formatted date
+                  formattedDate = formattedDate.replace(",", "");
+                  console.log(`Events of competition :${comp.competitionId} date formated :${formattedDate}`)
+                }
+
+                return {
+                  ...event,
+                  open_date: formattedDate, // replace original with formatted
+                  isAdded: false, // default
+                };
+              });
 
               await client.set(
                 `api:events:${comp.competitionId}`,
@@ -44,7 +66,7 @@ export async function refreshSportData(){
               let competitionMarketCount = 0;
 
               for (const event of events) {
-                // console.log(`Fetching markets for event: ${event.event_name}`);
+                console.log(`Fetching markets for event: ${event.event_name}`);
 
                 // 3. Markets
                 let markets = await getMarketList(event.event_id);
@@ -58,9 +80,9 @@ export async function refreshSportData(){
                 );
 
                 for (const market of markets) {
-                  // console.log(
-                  //   `Fetching market book for marketId: ${market.marketId}`
-                  // );
+                  console.log(
+                    `Fetching market book for marketId: ${market.marketId}`
+                  );
 
                   // 4. Market Books
                   const marketBook = await getBookList(market.marketId);
@@ -88,36 +110,94 @@ export async function refreshSportData(){
     }
 }
 
-export async function refreshAllEventList(){
-    try {
-        const sports = [
-          { id: "4", name: "cricket" },
-          { id: "2", name: "tennis" },
-          { id: "1", name: "soccer" },
-        ];
+// export async function refreshAllEventList(){
+//     try {
+//         const sports = [
+//           { id: "4", name: "cricket" },
+//           { id: "2", name: "tennis" },
+//           { id: "1", name: "soccer" },
+//         ];
 
-        for (const sport of sports) {
-          let enrichedEvents = await getAllEventList(sport.id);
+//         for (const sport of sports) {
+//           let enrichedEvents = await getAllEventList(sport.id);
 
-          // Add isAdded field to each event
-          enrichedEvents = enrichedEvents.map((event) => ({
-            ...event,
-            isAdded: false, // default value
-          }));
+//           // Add isAdded field to each event
+//           enrichedEvents = enrichedEvents.map((event) => ({
+//             ...event,
+//             isAdded: false, // default value
+//           }));
 
-          // Save consolidated list in Redis
-          await client.set(
-            `api:eventList:${sport.id}`,
-            JSON.stringify({
-              sportId: sport.id,
-              totalEvents: enrichedEvents.length,
-              events: enrichedEvents,
-            })
-          );
+//           // Save consolidated list in Redis
+//           await client.set(
+//             `api:eventList:${sport.id}`,
+//             JSON.stringify({
+//               sportId: sport.id,
+//               totalEvents: enrichedEvents.length,
+//               events: enrichedEvents,
+//             })
+//           );
 
-          // console.log(`Updated All Event List for ${sport.name} (${sport.id})`);
+//           // console.log(`Updated All Event List for ${sport.name} (${sport.id})`);
+//         }
+//     } catch (error) {
+//         console.error("Error in refreshEventLists:", err.message);
+//     }
+// }
+
+export async function refreshAllEventList() {
+  try {
+    const sports = [
+      { id: "4", name: "cricket" },
+      { id: "2", name: "tennis" },
+      { id: "1", name: "soccer" },
+    ];
+
+    for (const sport of sports) {
+      console.log("👍👍👍👍👍--Refresh started for",sport);
+      let enrichedEvents = await getAllEventList(sport.id);
+
+      // Format openDate + Add isAdded field
+      enrichedEvents = enrichedEvents.map((event) => {
+        let formattedDate = null;
+
+        if (event.openDate) {
+          const dateObj = new Date(event.openDate);
+          formattedDate = dateObj.toLocaleString("en-US", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: true,
+          });
         }
-    } catch (error) {
-        console.error("Error in refreshEventLists:", err.message);
+
+        // remove the comma after date
+        formattedDate = formattedDate.replace(",", "");
+
+        console.log(formattedDate,"formattedDate")
+
+        return {
+          ...event,
+          openDate: formattedDate, // replace with formatted date
+          isAdded: false, // default value
+        };
+      });
+
+      // Save consolidated list in Redis
+      await client.set(
+        `api:eventList:${sport.id}`,
+        JSON.stringify({
+          sportId: sport.id,
+          totalEvents: enrichedEvents.length,
+          events: enrichedEvents,
+        })
+      );
+
+      // console.log(`Updated All Event List for ${sport.name} (${sport.id})`);
     }
+  } catch (error) {
+    console.error("Error in refreshEventLists:", error.message);
+  }
 }

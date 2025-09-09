@@ -6,6 +6,18 @@ const inningInfoSchema = new Schema({
   maxInningNumber: { type: Number, required: true },
 }, { _id: false });
 
+const tossInfo = new Schema({
+  eventId:{ type: String, required: true, unique: true },
+  eventName: { type: String, required: true },
+  name: { type: String, default:"Who will win the toss" },
+  provider:{ type: String, default:"toss" },
+  runnersId:{ type: Number, required:true },
+  runnersName:{ type: String, default:"Who will win the toss" },
+  fancyId:{ type: String, required: true, unique: true },
+  mType:{ type: String, enum:["normal","winner"]},
+  status: { type: String, enum:["OPEN","CLOSED"], default:"OPEN"},
+  openDate: { type: String },
+}, { _id: false });
 
 const limitSchema = new Schema({
   name:{type:String, required:true},
@@ -39,7 +51,7 @@ const marketSchema = new Schema({
   marketId: { type: String, required: true },
   marketName: { type: String, required: true },
   // runners: [runnerSchema],
-  isAdded: { type:Boolean, default:true},
+  // isAdded: { type:Boolean, default:true},
   limit:[limitSchema],
 }, { _id: false });
 
@@ -52,7 +64,7 @@ const eventSchema = new Schema({
   competitionName: { type: String },
   competitionId: { type: String, required: true },
   sportId: { type: String, required: true },
-  sportName: { type: String, required: true },
+  sportName: { type: String },
   markets: [marketSchema],
   marketName: { type: String },
   marketId: { type: String },
@@ -65,10 +77,12 @@ const eventSchema = new Schema({
   marketCount: { type: Number, default: 0 },
   totalMatched: { type: String, default: "" },
   isAdded: { type: Boolean, default: true},
-  openDate: { type: Date },
-  unixDate:  { type: Number, required: true },
+  openDate: { type: String },
+  unixDate:  { type: Number },
   matchType: { type: String, enum:["t10","t15","100balls","t20","oneDay","test"]},
+  mType:{ type: String, enum:["normal","winner"]},
   inningInfo: inningInfoSchema,
+  tossInfo: tossInfo,
   newMatchType: { type: String, default:""}
 }, { timestamps: true });
 

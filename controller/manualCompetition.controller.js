@@ -1,3 +1,4 @@
+import ManualCompetition from "../model/manualCompetition.model.js";
 import { createManualCompetitionService, getNextCompetitionIdService } from "../service/manualCompetition.service.js";
 import { createManualCompetitionValidation } from "../validation/manualCompetition.validation.js";
 
@@ -33,3 +34,12 @@ export const getNextCompetitionId = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+// Get manual competition list
+export const getManualComeptition = async (req,res) => {
+  try {
+    const manualCompetition = await ManualCompetition.find()
+  } catch (error) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+}

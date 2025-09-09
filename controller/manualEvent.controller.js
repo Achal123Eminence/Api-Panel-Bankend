@@ -4,14 +4,15 @@ import { createManualEventValidation } from "../validation/manualEvent.validatio
 export const createManualEvent = async (req, res) => {
   try {
     const { error, value } = createManualEventValidation.validate(req.body);
-
+    
     if (error) {
       return res.status(400).json({
         success: false,
         message: error.details[0].message,
       });
     }
-
+    
+    console.log(req.body,"req.body");
     const event = await createManualEventService(value);
 
     res.status(201).json({
