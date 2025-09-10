@@ -7,14 +7,17 @@ const inningInfoSchema = new Schema({
 }, { _id: false });
 
 const tossInfo = new Schema({
-  eventId:{ type: String, required: true, unique: true },
+  eventId:{ type: String, required: true },
   eventName: { type: String, required: true },
   name: { type: String, default:"Who will win the toss" },
   provider:{ type: String, default:"toss" },
   runnersId:{ type: Number, required:true },
   runnersName:{ type: String, default:"Who will win the toss" },
-  fancyId:{ type: String, required: true, unique: true },
-  mType:{ type: String, enum:["normal","winner"]},
+  fancyId:{ type: String, required: true },
+  mType:{ type: String, required: true},
+  mTypeSelection:{ type: Number, required: true},
+  bType:{ type: String, required: true},
+  bTypeSelection:{ type: Number, required: true},
   status: { type: String, enum:["OPEN","CLOSED"], default:"OPEN"},
   openDate: { type: String },
 }, { _id: false });

@@ -172,18 +172,128 @@ async function buildEventMarketsWinner(eventData, limits, sportId) {
     .filter(Boolean); // remove nulls
 }
 
+// ==========OLD Version buildCompetitionMarkets
+// export async function buildCompetitionMarkets(marketsFromEvent, limits, sportId) {
+//   const currencies = await Currency.find();
 
+//   return limits.map(limit => {
+//     // Try to find this market in marketsFromEvent
+//     const matchingMarket = marketsFromEvent.find(
+//       m => m.marketName?.toLowerCase() === limit.marketName?.toLowerCase()
+//     );
+
+//     return {
+//       // Prefer marketId from event, else fallback to limit
+//       marketId: matchingMarket ? matchingMarket.marketId : limit.id,
+//       marketName: matchingMarket ? matchingMarket.marketName : limit.marketName,
+//       limit: currencies.map(c => ({
+//         name: c.name,
+//         baseCurrency: c.isBase,
+//         preMinStake: (Number(limit.preMinStake) || 0) * c.value,
+//         preMaxStake: (Number(limit.preMaxStake) || 0) * c.value,
+//         preMaxPL: (Number(limit.preMaxPL) || 0) * c.value,
+//         minStake: (Number(limit.minStake) || 0) * c.value,
+//         maxStake: (Number(limit.maxStake) || 0) * c.value,
+//         maxPL: (Number(limit.maxPL) || 0) * c.value,
+//         delay: limit.delay ?? 0,
+//         oddsLimit: limit.oddsLimit ?? 0,
+//         b2CpreMinStake: (Number(limit.preMinStake) || 0) * c.value,
+//         b2CpreMaxStake: (Number(limit.preMaxStake) || 0) * c.value,
+//         b2CpreMaxPL: (Number(limit.preMaxPL) || 0) * c.value,
+//         b2CminStake: (Number(limit.minStake) || 0) * c.value,
+//         b2CmaxStake: (Number(limit.maxStake) || 0) * c.value,
+//         b2CmaxPL: (Number(limit.maxPL) || 0) * c.value,
+//         b2Cdelay: limit.delay ?? 0,
+//         b2CoddsLimit: limit.oddsLimit ?? 0
+//       }))
+//     };
+//   });
+// }
+
+// NEW Version buildCompetitionMarkets
 export async function buildCompetitionMarkets(marketsFromEvent, limits, sportId) {
   const currencies = await Currency.find();
 
-  return limits.map(limit => {
-    // Try to find this market in marketsFromEvent
+  return limits.flatMap(limit => {
+    const limitName = limit.marketName?.toLowerCase();
+
+    // --- Football special case (sportId = "1") ---
+    if (sportId === "1" && limitName === "over/under") {
+      // Find all Over/Under markets from the event
+      const ouMarkets = marketsFromEvent.filter(
+        m =>
+          m.marketName?.toLowerCase().includes("over/under") &&
+          (m.marketName.toLowerCase().includes("6.5") ||
+           m.marketName.toLowerCase().includes("5.5") ||
+           true) // allow any "Over/Under"
+      );
+
+      return ouMarkets.map(market => ({
+        marketId: market.marketId,
+        marketName: market.marketName,
+        limit: currencies.map(c => ({
+          name: c.name,
+          baseCurrency: c.isBase,
+          preMinStake: (Number(limit.preMinStake) || 0) * c.value,
+          preMaxStake: (Number(limit.preMaxStake) || 0) * c.value,
+          preMaxPL: (Number(limit.preMaxPL) || 0) * c.value,
+          minStake: (Number(limit.minStake) || 0) * c.value,
+          maxStake: (Number(limit.maxStake) || 0) * c.value,
+          maxPL: (Number(limit.maxPL) || 0) * c.value,
+          delay: limit.delay ?? 0,
+          oddsLimit: limit.oddsLimit ?? 0,
+          b2CpreMinStake: (Number(limit.preMinStake) || 0) * c.value,
+          b2CpreMaxStake: (Number(limit.preMaxStake) || 0) * c.value,
+          b2CpreMaxPL: (Number(limit.preMaxPL) || 0) * c.value,
+          b2CminStake: (Number(limit.minStake) || 0) * c.value,
+          b2CmaxStake: (Number(limit.maxStake) || 0) * c.value,
+          b2CmaxPL: (Number(limit.maxPL) || 0) * c.value,
+          b2Cdelay: limit.delay ?? 0,
+          b2CoddsLimit: limit.oddsLimit ?? 0
+        }))
+      }));
+    }
+
+    // --- Tennis special case (sportId = "2") ---
+    if (sportId === "2" && limitName === "set winner") {
+      // Find all "Set X Winner" markets from the event
+      const setMarkets = marketsFromEvent.filter(
+        m =>
+          m.marketName?.toLowerCase().includes("set winner")
+      );
+
+      return setMarkets.map(market => ({
+        marketId: market.marketId,
+        marketName: market.marketName,
+        limit: currencies.map(c => ({
+          name: c.name,
+          baseCurrency: c.isBase,
+          preMinStake: (Number(limit.preMinStake) || 0) * c.value,
+          preMaxStake: (Number(limit.preMaxStake) || 0) * c.value,
+          preMaxPL: (Number(limit.preMaxPL) || 0) * c.value,
+          minStake: (Number(limit.minStake) || 0) * c.value,
+          maxStake: (Number(limit.maxStake) || 0) * c.value,
+          maxPL: (Number(limit.maxPL) || 0) * c.value,
+          delay: limit.delay ?? 0,
+          oddsLimit: limit.oddsLimit ?? 0,
+          b2CpreMinStake: (Number(limit.preMinStake) || 0) * c.value,
+          b2CpreMaxStake: (Number(limit.preMaxStake) || 0) * c.value,
+          b2CpreMaxPL: (Number(limit.preMaxPL) || 0) * c.value,
+          b2CminStake: (Number(limit.minStake) || 0) * c.value,
+          b2CmaxStake: (Number(limit.maxStake) || 0) * c.value,
+          b2CmaxPL: (Number(limit.maxPL) || 0) * c.value,
+          b2Cdelay: limit.delay ?? 0,
+          b2CoddsLimit: limit.oddsLimit ?? 0
+        }))
+      }));
+    }
+
+    // --- Default behavior ---
     const matchingMarket = marketsFromEvent.find(
-      m => m.marketName?.toLowerCase() === limit.marketName?.toLowerCase()
+      m => m.marketName?.toLowerCase() === limitName
     );
 
-    return {
-      // Prefer marketId from event, else fallback to limit
+    return [{
       marketId: matchingMarket ? matchingMarket.marketId : limit.id,
       marketName: matchingMarket ? matchingMarket.marketName : limit.marketName,
       limit: currencies.map(c => ({
@@ -206,9 +316,10 @@ export async function buildCompetitionMarkets(marketsFromEvent, limits, sportId)
         b2Cdelay: limit.delay ?? 0,
         b2CoddsLimit: limit.oddsLimit ?? 0
       }))
-    };
+    }];
   });
 }
+
 
 // buildCompetitionMarketsWinner
 async function buildCompetitionMarketsWinner(eventData, limits, sportId) {
@@ -332,7 +443,8 @@ export async function addEventService(eventData) {
 
     //Toss Info data
     const runnersId = generateRandom8Digit();
-    const fancyId = `${eventData.eventId}-${runnersId}`;
+    const fancyId = `${eventData.eventId}-${runnersId}.FY`;
+    const [teamA, teamB] = (eventData.matchRunners || []).slice(0, 2);
     const mType = eventData.marketName?.toLowerCase() === "winner" ? "winner" : "normal";
 
     const tossInfo = {
@@ -340,7 +452,10 @@ export async function addEventService(eventData) {
       eventName: eventData.eventName,
       runnersId,
       fancyId,
-      mType,
+      bType:teamA?.runnerName || "Team A",
+      bTypeSelection:teamA?.selectionId || 0,
+      mType:teamB?.runnerName || "Team B",
+      mTypeSelection:teamB?.selectionId || 0,
       openDate: eventData.openDate,
     };
 
@@ -414,5 +529,113 @@ export async function closeTossMarketsBeforeStart() {
     }
   } catch (error) {
     console.error("Error in closeTossMarketsBeforeStart:", error.message);
+  }
+}
+
+// ADD MARKET FOR THE EVENT FROM THE SEQUENTIAL LIST
+export async function addSingleMarketService(marketData){
+  try {
+    const { eventId, marketId, marketName } = marketData;
+    if(!eventId){
+      throw new Error("EventId is required!!");
+    }
+
+    // 1. Find event
+    const event = await Event.findOne({eventId});
+    if(!event){
+      throw new Error("Event not found");
+    }
+
+    // 2. Find competition
+    const competition = await Competition.findOne({competitionId:event.competitionId});
+    if (!competition) {
+      throw new Error("Competition not found");
+    }
+
+    const currencies = await Currency.find();
+
+    // 3. Find limit for this market in competition.markets
+    const matchingLimit = competition.markets.find(
+      m => m.marketName?.toLowerCase() === marketName?.toLowerCase()
+    );
+
+    if (!matchingLimit) {
+      throw new Error(`Market not valid or Closed in Default Market: ${marketName}`);
+    }
+
+    // 4. Build the new market object (similar to buildEventMarkets)
+    const newMarket = {
+      marketId,
+      marketName,
+      limit: currencies.map(c => {
+        const currencyLimit = matchingLimit.limit.find(l => l.name === c.name);
+
+        return {
+          name: c.name,
+          baseCurrency: c.isBase,
+          preMinStake: (Number(currencyLimit?.preMinStake) || 0),
+          preMaxStake: (Number(currencyLimit?.preMaxStake) || 0),
+          preMaxPL: (Number(currencyLimit?.preMaxPL) || 0),
+          minStake: (Number(currencyLimit?.minStake) || 0),
+          maxStake: (Number(currencyLimit?.maxStake) || 0),
+          maxPL: (Number(currencyLimit?.maxPL) || 0),
+          delay: Number(currencyLimit?.delay) || 0,
+          oddsLimit: Number(currencyLimit?.oddsLimit) || 0,
+          b2CpreMinStake: (Number(currencyLimit?.b2CpreMinStake) || 0),
+          b2CpreMaxStake: (Number(currencyLimit?.b2CpreMaxStake) || 0),
+          b2CpreMaxPL: (Number(currencyLimit?.b2CpreMaxPL) || 0),
+          b2CminStake: (Number(currencyLimit?.b2CminStake) || 0),
+          b2CmaxStake: (Number(currencyLimit?.b2CmaxStake) || 0),
+          b2CmaxPL: (Number(currencyLimit?.b2CmaxPL) || 0),
+          b2Cdelay: Number(currencyLimit?.b2Cdelay) || 0,
+          b2CoddsLimit: Number(currencyLimit?.b2CoddsLimit) || 0
+        };
+      })
+    };
+
+    event.markets.push(newMarket);
+    if (!event.marketIds.includes(marketId)) {
+      event.marketIds.push(marketId);
+    }
+
+    await event.save();
+
+    return newMarket;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+}
+
+//REMOVE THE SINGLE MARKET FROM THE SEQUENTIAL LIST
+// service
+export async function removeSingleMarketService({ eventId, marketId }) {
+  try {
+    if (!eventId) {
+      throw new Error("EventId is required!!");
+    }
+
+    // 1. Find event
+    const event = await Event.findOne({ eventId });
+    if (!event) {
+      throw new Error("Event not found");
+    }
+
+    // 2. Check if market exists
+    const marketExists = event.markets.some(m => m.marketId === marketId);
+    if (!marketExists) {
+      throw new Error("Market not found in this event");
+    }
+
+    // 3. Remove market object from event.markets
+    event.markets = event.markets.filter(m => m.marketId !== marketId);
+
+    // 4. Remove marketId from event.marketIds
+    event.marketIds = event.marketIds.filter(id => id !== marketId);
+
+    await event.save();
+
+    return { eventId, marketId };
+  } catch (error) {
+    throw new Error(error.message);
   }
 }

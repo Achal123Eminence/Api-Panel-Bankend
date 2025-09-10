@@ -31,3 +31,14 @@ export const eventValidation = Joi.object({
   totalMatched: Joi.alternatives().try(Joi.number(),Joi.string().allow("")).default(""),
   isAdded: Joi.boolean().default(false)
 });
+
+export const addSingleMarketValiidation = Joi.object({
+  eventId: Joi.string().required(),
+  marketId: Joi.string().required(),
+  marketName: Joi.string().required(),
+});
+
+export const removeSingleMarketValidation = Joi.object({
+  eventId: Joi.string().required(),
+  marketId: Joi.string().required(),
+});

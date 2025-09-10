@@ -1,4 +1,5 @@
 import client from "../database/redis.js";
+import Event from "../model/events.model.js";
 
 /**
 * Fetch competition list from Redis for a given sportId
@@ -64,7 +65,18 @@ export async function getMarketListFromRedis(eventId) {
             return []; // or throw new Error("No markets found")
         }
 
-        return JSON.parse(data);
+        const markets = JSON.parse(data);
+
+        // Get Event info from MongoDB
+        const event = await Event.findOne({ eventId }, { marketIds: 1 });
+        const marketIds = event?.marketIds || [];
+
+        const enrichedMarkets = markets.map((item) => ({
+          ...item,
+          isAdded: marketIds.includes(item.marketId),
+        }));
+
+        return enrichedMarkets;
     } catch (err) {
         console.error("Error fetching markets from Redis:", err.message);
         throw new Error("Failed to fetch markets from Redis");
