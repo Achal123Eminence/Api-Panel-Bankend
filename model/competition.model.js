@@ -24,7 +24,7 @@ const limitSchema = new Schema({
 const marketSchema = new Schema({
   marketId: { type: String, required: true },
   marketName: { type: String, required: true },
-  // status: { type: Boolean, default: true},
+  status: { type: Boolean, default: true},
   type: { type:String},
   limit:[limitSchema],
 }, { _id: false });

@@ -54,7 +54,7 @@ const marketSchema = new Schema({
   marketId: { type: String, required: true },
   marketName: { type: String, required: true },
   // runners: [runnerSchema],
-  // isAdded: { type:Boolean, default:true},
+  status: { type:Boolean, default:true},
   limit:[limitSchema],
 }, { _id: false });
 
