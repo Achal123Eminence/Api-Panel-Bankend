@@ -483,7 +483,7 @@ export async function addEventService(eventData) {
         markets: compMarkets,
       };
 
-      if (eventData.sportId === "4") {
+      if (eventData.sportId === "4" && eventData.isWinnerOpen !== true) {
         competitionPayload.premium = eventData.premium;
       }
 
@@ -552,7 +552,7 @@ export async function addEventService(eventData) {
     };
 
     // add matchType + inningInfo only for sportId=4
-    if (eventData.sportId === "4") {
+    if (eventData.sportId === "4" && eventData.isWinnerOpen !== true) {
       eventPayload.matchType = eventData.matchType;
       eventPayload.tossInfo = tossInfo;
       eventPayload.inningInfo = inningInfoCr;
