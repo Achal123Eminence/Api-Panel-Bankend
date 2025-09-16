@@ -407,6 +407,57 @@ async function buildCompetitionMarketsWinner(eventData, limits, sportId) {
   });
 }
 
+//UPDATE BUILD EVENT MARKET WINNER
+async function buildUpdateEventMarketsWinner(eventData, limits, sportId) {
+  const currencies = await Currency.find();
+  console.log(currencies,"currencies-currencies")
+  console.log(limits,"limits-limits")
+  console.log(eventData,"eventData-eventData")
+
+  return limits
+    .filter(l => l.marketName?.toLowerCase() === "match odds") // only take Match Odds limit
+    .map(limit => {
+      console.log(limit,"limit")
+      console.log("Limit values:", limit.preMinStake, limit.maxStake, limit.minStake);
+      // Special case: if event marketName == "Winner", replace it with Match Odds
+      if (eventData.marketName?.toLowerCase() === "winner") {
+        return {
+          marketId: eventData.marketId, // use Winner's marketId from event
+          marketName: "Winner",     // force marketName as "Match Odds"
+          status:true,
+          limit: currencies.map(c => {
+            // 🔑 find the limit for this currency inside Match Odds
+            // const currencyLimit = limit.find(l => l.name === c.name);
+
+            return {
+              name: c.name,
+              baseCurrency: c.isBase,
+              preMinStake: Number(limit.preMinStake || 0) * (c.value || 1),
+              preMaxStake: Number(limit.preMaxStake || 0) * (c.value || 1),
+              preMaxPL: Number(limit.preMaxPL || 0) * (c.value || 1),
+              minStake: Number(limit.minStake || 0) * (c.value || 1),
+              maxStake: Number(limit.maxStake || 0) * (c.value || 1),
+              maxPL: Number(limit.maxPL || 0) * (c.value || 1),
+              delay: Number(limit.delay) || 0,
+              oddsLimit: Number(limit.oddsLimit) || 0,
+              b2CpreMinStake: Number(limit.preMinStake || 0) * (c.value || 1),
+              b2CpreMaxStake: Number(limit.preMaxStake || 0) * (c.value || 1),
+              b2CpreMaxPL: Number(limit.preMaxPL || 0) * (c.value || 1),
+              b2CminStake: Number(limit.minStake || 0) * (c.value || 1),
+              b2CmaxStake: Number(limit.maxStake || 0) * (c.value || 1),
+              b2CmaxPL: Number(limit.maxPL || 0) * (c.value || 1),
+              b2Cdelay: Number(limit.delay) || 0,
+              b2CoddsLimit: Number(limit.oddsLimit) || 0
+            };
+          })
+        };
+      }
+
+      return null;
+    })
+    .filter(Boolean); // remove nulls
+}
+
 // 01. ADD EVENT FROM THE ALL EVENT LIST WHERE COMPETITION ADDED FIRST IF NOT EXIST AND THEN EVENT GETS ADDED WITH MARKET 
 export async function addEventService(eventData) {
   try {
@@ -738,7 +789,9 @@ export async function deleteCompetitionService({_id, competitionId}) {
 // 07. UPDATE THE GRADE OF MATCH IN MATCH
 export async function updateEventGradeService(eventData){
   try {
-    const {eventGrade,eventId,_id} = eventData;
+    // console.log(eventData,"eventData")
+    const {eventGrade,eventId,marketName,_id} = eventData;
+    // console.log(eventGrade,eventId,marketName,_id,"eventGrade,eventId,marketName,_id")
 
     if(!_id){
       throw new Error("_id is required!!");
@@ -752,6 +805,10 @@ export async function updateEventGradeService(eventData){
       throw new Error("eventGrade is required!!");
     };
 
+    if(!marketName){
+      throw new Error("marketName is required!!");
+    };
+
     const isEvent = await Event.findById(_id);
     if(!isEvent){
       throw new Error("Event not found !!");
@@ -760,15 +817,22 @@ export async function updateEventGradeService(eventData){
     let eventLimits = await getLimitsForGrade(eventGrade,isEvent.sportId);
     console.log(eventLimits,"eventLimits")
 
-    let eventMarkets = await buildCompetitionMarkets(isEvent.markets,eventLimits,isEvent.sportId);
-    console.log(eventMarkets,"eventMarkets")
+    // let eventMarkets = await buildCompetitionMarkets(isEvent.markets,eventLimits,isEvent.sportId);
+    // console.log(eventMarkets,"eventMarkets")
+
+    let eventMarkets;
+
+    if (marketName?.toLowerCase() === "winner") {
+      eventMarkets = await buildUpdateEventMarketsWinner(eventData,eventLimits,isEvent.sportId);
+    }else{
+      eventMarkets = await buildCompetitionMarkets(isEvent.markets,eventLimits,isEvent.sportId);
+    }
 
     isEvent.markets = eventMarkets;
     isEvent.eventGrade = eventGrade;
 
     const updatedGradeEvent = await isEvent.save();
 
-    console.log(updatedGradeEvent,"updatedGradeEvent")
     return updatedGradeEvent;
   } catch (error) {
     throw new Error(error.message);

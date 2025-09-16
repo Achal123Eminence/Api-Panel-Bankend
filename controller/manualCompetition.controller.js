@@ -36,10 +36,47 @@ export const getNextCompetitionId = async (req, res) => {
 };
 
 // Get manual competition list
-export const getManualComeptition = async (req,res) => {
+export const getManualComeptitionList = async (req,res) => {
   try {
-    const manualCompetition = await ManualCompetition.find()
+    const manualCompetition = await ManualCompetition.find();
+     res.status(201).json({
+      success: true,
+      message: "Manual Competition List fetched successfully",
+      data: manualCompetition,
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: err.message });
+  }
+}
+
+// UPDATE COMPETITION STATUS
+export const updateCompetitionStatus = async (req, res) => {
+  try {
+    const { id } = req.body;
+    // Validate input
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Competition ID is required",
+      });
+    }
+
+    const isCompetition = await ManualCompetition.findById(id);
+    if(!isCompetition){
+      return res.status(404).json({
+        success: false,
+        message: "Competition doesn't exist!!"
+      });
+    };
+
+    isCompetition.status = false;
+    await isCompetition.save();
+    res.status(201).json({
+      success: true,
+      message: "Manual Competition updated successfully",
+      data: isCompetition,
+    }); 
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 }

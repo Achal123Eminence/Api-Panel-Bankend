@@ -7,6 +7,7 @@ const manualCompetitionSchema = new Schema(
     sportId: { type: String, required: true },
     competitionType: { type: String, enum: ["manual", "virtual"], required: true },
     openDate: { type: Date, required: true },
+    status: { type: Boolean, default: true},
   },
   { timestamps: true }
 );
