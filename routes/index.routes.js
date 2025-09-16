@@ -6,6 +6,10 @@ import eventRouter from './events.routes.js';
 import currencyRouter from './currency.routes.js';
 import manualRouter from './manual.routes.js';
 import { authMiddleware } from '../middleware/auth.middleware.js';
+import { rateLimiter } from '../middleware/rateLimit.middleware.js';
+
+// Rate limiter globally Applied
+router.use(rateLimiter);
 
 router.use('/user',userRouter);
 router.use('/sport',authMiddleware,redisRouter);
