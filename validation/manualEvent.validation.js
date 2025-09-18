@@ -10,4 +10,4 @@ export const createManualEventValidation = Joi.object({
   marketId: Joi.string().required(),
   eventType: Joi.string().valid("manual", "virtual").required(),
   openDate: Joi.date().required(),
-});
+}).unknown(true);

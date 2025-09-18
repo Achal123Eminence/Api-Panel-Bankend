@@ -6,14 +6,14 @@ const runnerSchema = Joi.object({
   runnerName: Joi.string().required(),
   handicap: Joi.number().default(0),
   sortPriority: Joi.number()
-});
+}).unknown(true);
 
 const marketSchema = Joi.object({
   marketId: Joi.string().required(),
   marketName: Joi.string().required(),
   runners: Joi.array().items(runnerSchema),
   isAdded: Joi.boolean().default(false)
-});
+}).unknown(true);
 
 export const eventValidation = Joi.object({
   eventId: Joi.string().required(),
@@ -30,15 +30,15 @@ export const eventValidation = Joi.object({
   marketCount: Joi.number().default(0),
   totalMatched: Joi.alternatives().try(Joi.number(),Joi.string().allow("")).default(""),
   isAdded: Joi.boolean().default(false)
-});
+}).unknown(true);
 
 export const addSingleMarketValiidation = Joi.object({
   eventId: Joi.string().required(),
   marketId: Joi.string().required(),
   marketName: Joi.string().required(),
-});
+}).unknown(true);
 
 export const removeSingleMarketValidation = Joi.object({
   eventId: Joi.string().required(),
   marketId: Joi.string().required(),
-});
+}).unknown(true);

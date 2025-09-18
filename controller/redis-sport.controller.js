@@ -4,7 +4,7 @@ import { getCompetitionListFromRedis, getEventListFromRedis, getMarketListFromRe
 
 export async function redisCompetitionList(req,res){
     try {
-        const { sportId } = req.params; // get from URL param
+        const { sportId } = req.body; // get from URL param
         if (!sportId) {
             return res.status(400).json({ error: "sportId is required" });
         }
@@ -34,7 +34,7 @@ export async function redisCompetitionList(req,res){
 
 export async function redisEventList(req, res) {
     try {
-      const { competitionId } = req.params;
+      const { competitionId } = req.body;
 
       if (!competitionId) {
         return res.status(400).json({ error: "competitionId are required" });
@@ -57,7 +57,7 @@ export async function redisEventList(req, res) {
 
 export async function redisMarketList(req, res) {
     try {
-        const { eventId } = req.params;
+        const { eventId } = req.body;
 
         if (!eventId) {
             return res.status(400).json({ error: "eventId are required" });
@@ -73,7 +73,7 @@ export async function redisMarketList(req, res) {
 
 export async function redisMarketBook(req, res) {
     try {
-        const { marketId } = req.params;
+        const { marketId } = req.body;
 
         if (!marketId) {
             return res.status(400).json({ error: "marketId are required!" });
@@ -89,7 +89,7 @@ export async function redisMarketBook(req, res) {
 
 export async function redisAllEventData(req, res) {
   try {
-    const { sportId } = req.params;
+    const { sportId } = req.body;
     if (!sportId) {
       return res.status(400).json({ error: "sportId is required!" });
     }

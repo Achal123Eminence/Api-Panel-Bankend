@@ -7,13 +7,14 @@ import currencyRouter from './currency.routes.js';
 import manualRouter from './manual.routes.js';
 import { authMiddleware } from '../middleware/auth.middleware.js';
 import { rateLimiter } from '../middleware/rateLimit.middleware.js';
+import { fingerprintMiddleware } from '../middleware/fingerprint.middleware.js';
 
 // Rate limiter globally Applied
 router.use(rateLimiter);
 
 router.use('/user',userRouter);
-router.use('/sport',authMiddleware,redisRouter);
-router.use('/event',authMiddleware,eventRouter);
+router.use('/sport',authMiddleware,fingerprintMiddleware,redisRouter);
+router.use('/event',authMiddleware,fingerprintMiddleware,eventRouter);
 router.use('/currency',authMiddleware,currencyRouter);
 router.use('/manual',authMiddleware,manualRouter);
 
