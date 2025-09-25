@@ -83,7 +83,8 @@ const eventSchema = new Schema({
   openDate: { type: String },
   unixDate:  { type: Number },
   matchType: { type: String, enum:["t10","t15","100balls","t20","oneDay","test"]},
-  mType:{ type: String, enum:["normal","winner"]},
+  mType:{ type: String},
+  premium:{ type: String},
   inningInfo: inningInfoSchema,
   tossInfo: tossInfo,
   newMatchType: { type: String, default:""}

@@ -3,6 +3,7 @@ import Competition from '../model/competition.model.js';
 import Currency from '../model/currency.model.js';
 import DefaultSettings from '../model/default-setting.model.js';
 import Event from '../model/events.model.js';
+import { parse } from 'date-fns';
 
 const inningInfo = {
   "t10": {perInningOver:10,totalOver:15,maxInningNumber:2},
@@ -147,10 +148,10 @@ async function buildEventMarketsWinner(eventData, limits, sportId) {
       console.log(limit,"limit")
       console.log("Limit values:", limit.preMinStake, limit.maxStake, limit.minStake);
       // Special case: if event marketName == "Winner", replace it with Match Odds
-      if (eventData.marketName?.toLowerCase() === "winner") {
+      if (eventData.marketName?.toLowerCase().includes("winner")) {
         return {
           marketId: eventData.marketId, // use Winner's marketId from event
-          marketName: "Winner",     // force marketName as "Match Odds"
+          marketName: eventData.marketName,     // force marketName as "Match Odds"
           status:true,
           limit: currencies.map(c => {
             // 🔑 find the limit for this currency inside Match Odds
@@ -420,7 +421,7 @@ async function buildUpdateEventMarketsWinner(eventData, limits, sportId) {
       console.log(limit,"limit")
       console.log("Limit values:", limit.preMinStake, limit.maxStake, limit.minStake);
       // Special case: if event marketName == "Winner", replace it with Match Odds
-      if (eventData.marketName?.toLowerCase() === "winner") {
+      if (eventData.marketName?.toLowerCase()?.toLowerCase().includes("winner")) {
         return {
           marketId: eventData.marketId, // use Winner's marketId from event
           marketName: "Winner",     // force marketName as "Match Odds"
@@ -500,7 +501,7 @@ export async function addEventService(eventData) {
 
     let eventMarkets;
 
-    if (eventData.marketName?.toLowerCase() === "winner") {
+    if (eventData.marketName?.toLowerCase().includes("winner")) {
         eventMarkets = await buildEventMarketsWinner(eventData,competition.markets,eventData.sportId);
       } else {
         eventMarkets = await buildEventMarkets(eventData.markets,competition.markets,eventData.sportId);
@@ -514,7 +515,7 @@ export async function addEventService(eventData) {
     const runnersId = generateRandom8Digit();
     const fancyId = `${eventData.eventId}-${runnersId}.FY`;
     const [teamA, teamB] = (eventData.matchRunners || []).slice(0, 2);
-    const mType = eventData.marketName?.toLowerCase() === "winner" ? "winner" : "normal";
+    const mType = eventData.marketName?.toLowerCase().includes("winner") ? eventData.marketName : "normal";
 
     const tossInfo = {
       eventId: eventData.eventId,
@@ -556,6 +557,7 @@ export async function addEventService(eventData) {
       eventPayload.matchType = eventData.matchType;
       eventPayload.tossInfo = tossInfo;
       eventPayload.inningInfo = inningInfoCr;
+      eventPayload.premium = eventData.premium;
     }
 
     const newEvent = await Event.create(eventPayload);
@@ -581,7 +583,12 @@ export async function closeTossMarketsBeforeStart() {
     });
 
     for (const event of events) {
-      const tossOpenDate = new Date(event.tossInfo.openDate);
+      const tossOpenDate = parse(event.tossInfo.openDate, 'MM/dd/yyyy hh:mm:ss a', new Date());
+
+      if (isNaN(tossOpenDate.getTime())) {
+        console.warn(`⚠️ Invalid date for Event ${event.eventId}: ${event.tossInfo.openDate}`);
+        continue; // skip this event
+      }
 
       // Calculate cutoff time (2 hours before event start)
       const cutoffTime = new Date(tossOpenDate.getTime() - 2 * 60 * 60 * 1000);
@@ -822,7 +829,7 @@ export async function updateEventGradeService(eventData){
 
     let eventMarkets;
 
-    if (marketName?.toLowerCase() === "winner") {
+    if (marketName?.toLowerCase()?.toLowerCase().includes("winner")) {
       eventMarkets = await buildUpdateEventMarketsWinner(eventData,eventLimits,isEvent.sportId);
     }else{
       eventMarkets = await buildCompetitionMarkets(isEvent.markets,eventLimits,isEvent.sportId);
