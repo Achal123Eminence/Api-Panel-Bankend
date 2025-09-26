@@ -46,7 +46,7 @@ export async function redisEventList(req, res) {
       let sortedEvents = Array.isArray(events) ? [...events] : [];
 
       // Sort by openDate (latest first)
-      sortedEvents.sort((a, b) => new Date(b.open_date) - new Date(a.open_date));
+      sortedEvents.sort((a, b) => new Date(a.open_date) - new Date(b.open_date));
 
       return res.status(200).json({ competitionId, events: sortedEvents });
     } catch (err) {
@@ -120,7 +120,7 @@ export async function redisAllEventData(req, res) {
     });
 
     // 5. Sort by openDate (latest first)
-    redisEvents.sort((a, b) => new Date(b.openDate) - new Date(a.openDate));
+    redisEvents.sort((a, b) => new Date(a.openDate) - new Date(b.openDate));
 
     // 6. Send response
      return res.status(200).json({

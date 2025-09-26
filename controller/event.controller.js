@@ -219,7 +219,13 @@ export const updateEventMarket = async (req,res) => {
 export const getSavedEventBySportId = async (req,res) => {
   try {
     const { sportId } = req.body;
-    const eventList = await Event.find({sportId});
+    let eventList = await Event.find({sportId});
+
+    // Convert string -> Date and sort
+    eventList = eventList.sort((a, b) => {
+      console.log(new Date(a.openDate),"new Date(a.openDate) - new Date(b.openDate)",new Date(b.openDate))
+      return new Date(a.openDate) - new Date(b.openDate);
+    });
 
     return res.status(200).json({
       success: true,
@@ -241,6 +247,28 @@ export const rollBackEvent = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: result.message
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+export const isCompetitionExist = async (req, res) => {
+  try {
+    const { competitionId } = req.body;
+    console.log(competitionId,"competitionId")
+
+    const exist = await Competition.findOne({ competitionId });
+    console.log(exist,"exist")
+
+    return res.status(200).json({
+      success: true,
+      message: exist ? "Competition exists" : "Competition not found",
+      data: !!exist
     });
 
   } catch (error) {

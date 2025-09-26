@@ -1,5 +1,5 @@
 import express from "express";
-import { addEventController, addSingleMarket, removeSingleMarket, getCompetitionList, updateComeptitionGrade, deleteCompetition, updateEventGrade, deleteEvent, removeEvent, updateCompetitionMarket, updateEventMarket, getSavedEventBySportId, rollBackEvent } from "../controller/event.controller.js";
+import { addEventController, addSingleMarket, removeSingleMarket, getCompetitionList, updateComeptitionGrade, deleteCompetition, updateEventGrade, deleteEvent, removeEvent, updateCompetitionMarket, updateEventMarket, getSavedEventBySportId, rollBackEvent, isCompetitionExist } from "../controller/event.controller.js";
 import { createDefault, updateSingleDefault, getDefault } from "../controller/default-setting.controller.js";
 const eventRouter = express.Router();
 
@@ -19,5 +19,6 @@ eventRouter.post('/update-competition-market', updateCompetitionMarket);
 eventRouter.post('/update-event-market', updateEventMarket);
 eventRouter.post('/get-saved-event', getSavedEventBySportId);
 eventRouter.post('/rollback-event', rollBackEvent);
+eventRouter.post('/competition-check',isCompetitionExist);
 
 export default eventRouter;

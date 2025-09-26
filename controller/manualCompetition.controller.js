@@ -39,6 +39,9 @@ export const getNextCompetitionId = async (req, res) => {
 export const getManualComeptitionList = async (req,res) => {
   try {
     const manualCompetition = await ManualCompetition.find();
+
+    manualCompetition.sort((a, b) => new Date(a.openDate) - new Date(b.openDate));
+    
      res.status(201).json({
       success: true,
       message: "Manual Competition List fetched successfully",
