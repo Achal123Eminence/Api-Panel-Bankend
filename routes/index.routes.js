@@ -8,6 +8,7 @@ import manualRouter from './manual.routes.js';
 import { authMiddleware } from '../middleware/auth.middleware.js';
 import { rateLimiter } from '../middleware/rateLimit.middleware.js';
 import { fingerprintMiddleware } from '../middleware/fingerprint.middleware.js';
+import runningMatchesRouter from './runningMatches.routes.js';
 
 // Rate limiter globally Applied
 router.use(rateLimiter);
@@ -15,7 +16,8 @@ router.use(rateLimiter);
 router.use('/user',userRouter);
 router.use('/sport',authMiddleware,fingerprintMiddleware,redisRouter);
 router.use('/event',authMiddleware,fingerprintMiddleware,eventRouter);
-router.use('/currency',authMiddleware,currencyRouter);
-router.use('/manual',authMiddleware,manualRouter);
+router.use('/currency',authMiddleware,fingerprintMiddleware,currencyRouter);
+router.use('/manual',authMiddleware,fingerprintMiddleware,manualRouter);
+router.use('/running-matches',authMiddleware,fingerprintMiddleware,runningMatchesRouter);
 
 export default router;

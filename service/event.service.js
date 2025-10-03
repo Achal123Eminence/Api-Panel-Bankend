@@ -630,13 +630,24 @@ export async function addSingleMarketService(marketData){
 
     const currencies = await Currency.find();
 
-    // 3. Find limit for this market in competition.markets
-    const matchingLimit = competition.markets.find(
-      m => m.marketName?.toLowerCase() === marketName?.toLowerCase()
-    );
+    // 3. Special case: if marketName includes "winner", use "Match Odds"
+    let matchingLimit;
+    if (marketName?.toLowerCase().includes("winner")) {
+      matchingLimit = competition.markets.find(
+        m => m.marketName?.toLowerCase() === "match odds"
+      );
+    } else {
+      matchingLimit = competition.markets.find(
+        m => m.marketName?.toLowerCase() === marketName?.toLowerCase()
+      );
+    }
 
     if (!matchingLimit) {
-      throw new Error(`Market not valid or Closed in Default Market: ${marketName}`);
+      throw new Error(
+        `Market not valid or Closed in Default Market: ${
+          marketName?.toLowerCase().includes("winner") ? "Match Odds" : marketName
+        }`
+      );
     }
 
     // 4. Build the new market object (similar to buildEventMarkets)
@@ -835,8 +846,11 @@ export async function updateEventGradeService(eventData){
       eventMarkets = await buildCompetitionMarkets(isEvent.markets,eventLimits,isEvent.sportId);
     }
 
+    let onlyMarketIdArray = eventMarkets.map(m => m.marketId);
+
     isEvent.markets = eventMarkets;
     isEvent.eventGrade = eventGrade;
+    isEvent.marketIds = onlyMarketIdArray;
 
     const updatedGradeEvent = await isEvent.save();
 
